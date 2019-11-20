@@ -9,7 +9,7 @@ from . import resnet
 class Backbone(nn.Module):
 	def __init__(self, arch):
 		super(Backbone, self).__init__()
-		if arch == "resnet18":
+		if arch == "resnet18dialated":
 			# self.network = ResNet18()
 			orig_resnet = resnet.__dict__['resnet18'](pretrained=True)
 			self.network = ResnetDilated(orig_resnet, dilate_scale=8)

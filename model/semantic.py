@@ -9,7 +9,8 @@ class SemanticNet(nn.Module):
     def __init__(self, arch, use_softmax=True):
         super(SemanticNet, self).__init__()
         if arch == "upernet":
-            # self.network = UPerNet(num_class=2, fc_dim=512, use_softmax=use_softmax) # hard-coded for FMDT
+            self.network = UPerNet(num_class=2, fc_dim=512, use_softmax=use_softmax) # hard-coded for FMDT
+        if cfg.arch_semantic == "ppm_deepsup":
             self.network = PPMDeepsup(num_class=2, fc_dim=512, use_softmax=use_softmax) # hard-coded for FMDT
         else:
             raise ValueError("please check args.semantic_arch value. Current argument recieved is: "+arch)

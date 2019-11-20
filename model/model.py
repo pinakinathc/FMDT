@@ -3,10 +3,10 @@ import torch.nn as nn
 
 
 class Model(nn.Module):
-    def __init__(self, encoder_net, decoder_net, critic, deep_sup_scale=None):
+    def __init__(self, backbone_net, semantic_net, critic, deep_sup_scale=None):
         super(Model, self).__init__()
-        self.encoder = encoder_net
-        self.decoder = decoder_net
+        self.backbone_net = backbone_net
+        self.semantic_net = semantic_net
         self.critic = critic
         self.deep_sup_scale = deep_sup_scale
 
@@ -14,9 +14,9 @@ class Model(nn.Module):
         # for training
         if segSize is None:
             if self.deep_sup_scale is not None: # use deep supervision technique
-                (pred, pred_deepsup) = self.decoder(self.encoder(feed_dict['img_data'], return_feature_maps=True))
+                (pred, pred_deepsup) = self.semantic_net(self.backbone_net(feed_dict['img_data'], return_feature_maps=True))
             else:
-                pred = self.decoder(self.encoder(feed_dict['img_data'], return_feature_maps=True))
+                pred = self.semantic_net(self.backbone_net(feed_dict['img_data'], return_feature_maps=True))
 
             loss = self.critic(pred, feed_dict['seg_label'])
             if self.deep_sup_scale is not None:
@@ -27,7 +27,7 @@ class Model(nn.Module):
             return loss, acc
         # inference
         else:
-            pred = self.decoder(self.encoder(feed_dict['img_data'], return_feature_maps=True), segSize=segSize)
+            pred = self.semantic_net(self.backbone_net(feed_dict['img_data'], return_feature_maps=True), segSize=segSize)
             return pred
 
     def pixel_acc(self, pred, label):
