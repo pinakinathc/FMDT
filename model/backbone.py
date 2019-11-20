@@ -16,8 +16,8 @@ class Backbone(nn.Module):
 		else:
 			raise ValueError("please specify backbone architecture. Recieve args as: "+arch)
 
-	def forward(self,input_):
-		out = self.network(input_, return_feature_maps=True)
+	def forward(self,input_, return_feature_maps=True):
+		out = self.network(input_, return_feature_maps=return_feature_maps)
 		return out
 
 
