@@ -6,16 +6,16 @@ import torchvision
 from torch.nn import BatchNorm2d
 
 class SemanticNet(nn.Module):
-    def __init__(self, arch, use_softmax=True):
+    def __init__(self, cfg, use_softmax=False):
         super(SemanticNet, self).__init__()
-        if arch == "upernet":
-            self.network = UPerNet(num_class=2, fc_dim=512, use_softmax=use_softmax) # hard-coded for FMDT
-        if cfg.arch_semantic == "ppm_deepsup":
-            self.network = PPMDeepsup(num_class=2, fc_dim=512, use_softmax=use_softmax) # hard-coded for FMDT
+        if cfg.MODEL.arch_semantic == "upernet":
+            self.network = UPerNet(num_class=cfg.MODEL.num_class, fc_dim=cfg.MODEL.fc_dim, use_softmax=use_softmax)
+        if cfg.MODEL.arch_semantic == "ppm_deepsup":
+            self.network = PPMDeepsup(num_class=cfg.MODEL.num_class, fc_dim=cfg.MODEL.fc_dim, use_softmax=use_softmax)
         else:
-            raise ValueError("please check args.semantic_arch value. Current argument recieved is: "+arch)
+            raise ValueError("please check cfg.MODEL.arch_semantic value. Current argument recieved is: "+cfg.MODEL.arch_semantic)
 
-    def forward(self, x, segSize):
+    def forward(self, x, segSize=False):
         out = self.network(x, segSize=segSize)
         return out
 

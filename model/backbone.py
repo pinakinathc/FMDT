@@ -7,14 +7,14 @@ from . import resnet
 
 
 class Backbone(nn.Module):
-	def __init__(self, arch):
+	def __init__(self, cfg):
 		super(Backbone, self).__init__()
-		if arch == "resnet18dialated":
+		if cfg.MODEL.arch_backbone == "resnet18dialated":
 			# self.network = ResNet18()
 			orig_resnet = resnet.__dict__['resnet18'](pretrained=True)
 			self.network = ResnetDilated(orig_resnet, dilate_scale=8)
 		else:
-			raise ValueError("please specify backbone architecture. Recieve args as: "+arch)
+			raise ValueError("please specify backbone architecture. Recieve args as: "+cfg.MODEL.arch_backbone)
 
 	def forward(self,input_, return_feature_maps=True):
 		out = self.network(input_, return_feature_maps=return_feature_maps)

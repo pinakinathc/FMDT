@@ -88,6 +88,9 @@ class BaseDataset(torch.utils.data.Dataset):
 
     def segm_transform(self, segm):
         # to tensor, -1 to 149
+        segm = np.array(segm)
+        segm[segm!=255] = 1
+        segm[segm==255] = 2
         segm = torch.from_numpy(np.array(segm)).long() - 1
         return segm
 
@@ -183,11 +186,12 @@ class TrainDataset(BaseDataset):
         for i in range(self.batch_per_gpu):
             img = images[i]
             segm = segm_images[i]
-            import matplotlib.pyplot as plt
-            fig, ax = plt.subplots(1,2)
-            ax[0].imshow(img)
-            ax[1].imshow(segm)
-            plt.show()
+            # import matplotlib.pyplot as plt
+            # fig, ax = plt.subplots(1,2)
+            # ax[0].imshow(img)
+            # ax[1].imshow(segm)
+            # plt.show()
+            # print ("hey!!!!!!!!!!!!!!")
 
             # random_flip
             if np.random.choice([0, 1]):
@@ -227,4 +231,3 @@ class TrainDataset(BaseDataset):
     def __len__(self):
         return int(1e10) # It's a fake length due to the trick that every loader maintains its own list
         #return self.num_sampleclass
-

@@ -1,16 +1,18 @@
 # -*-encoding: utf-8 -*-
 import sys
+import time
 import torch
 import torch.nn as nn
 from torch.optim import Adadelta
 
-from config import get_args, _C as cfg
+from config import _C as cfg
 from model.backbone import Backbone
 from model.semantic import SemanticNet
 # from model.geometry import Geometry_Net
 from model.model import Model
 from dataloader.fashion_dataset import TrainDataset
 from utils import AverageMeter, setup_logger
+from lib.nn import user_scattered_collate
 
 
 def checkpoint(model, history, cfg, iters):
@@ -57,27 +59,27 @@ def create_optimizers(nets, cfg):
     (backbone_net, semantic_net) = nets
     optimizer_backbone = torch.optim.SGD(
         group_weight(backbone_net),
-        lr=cfg.TRAIN.lr_encoder,
+        lr=cfg.TRAIN.lr_backbone,
         momentum=cfg.TRAIN.beta1,
         weight_decay=cfg.TRAIN.weight_decay)
     optimizer_semantic = torch.optim.SGD(
         group_weight(semantic_net),
-        lr=cfg.TRAIN.lr_decoder,
+        lr=cfg.TRAIN.lr_semantic,
         momentum=cfg.TRAIN.beta1,
         weight_decay=cfg.TRAIN.weight_decay)
     return (optimizer_backbone, optimizer_semantic)
 
 
 def adjust_learning_rate(optimizers, cur_iter, cfg):
-    scale_running_lr = ((1. - float(cur_iter) / cfg.TRAIN.max_iters) ** cfg.TRAIN.lr_pow)
-    cfg.TRAIN.running_lr_encoder = cfg.TRAIN.lr_encoder * scale_running_lr
-    cfg.TRAIN.running_lr_decoder = cfg.TRAIN.lr_decoder * scale_running_lr
+    scale_running_lr = ((1. - float(cur_iter) / cfg.TRAIN.end_iters) ** cfg.TRAIN.lr_pow)
+    cfg.TRAIN.running_lr_backbone = cfg.TRAIN.lr_backbone * scale_running_lr
+    cfg.TRAIN.running_lr_semantic = cfg.TRAIN.lr_semantic * scale_running_lr
 
     (optimizer_encoder, optimizer_decoder) = optimizers
     for param_group in optimizer_encoder.param_groups:
-        param_group['lr'] = cfg.TRAIN.running_lr_encoder
+        param_group['lr'] = cfg.TRAIN.running_lr_backbone
     for param_group in optimizer_decoder.param_groups:
-        param_group['lr'] = cfg.TRAIN.running_lr_decoder
+        param_group['lr'] = cfg.TRAIN.running_lr_semantic
 
 
 def train(model, loader_train, history):
@@ -102,6 +104,9 @@ def train(model, loader_train, history):
             None.
     """
 
+    cfg.TRAIN.running_lr_backbone = cfg.TRAIN.lr_backbone
+    cfg.TRAIN.running_lr_semantic = cfg.TRAIN.lr_semantic
+
     history = {'train': {'iters': [], 'loss': [], 'acc': []}}
 
     batch_time = AverageMeter()
@@ -114,6 +119,7 @@ def train(model, loader_train, history):
     tic = time.time()
     for cur_iter in range(cfg.TRAIN.start_iters, cfg.TRAIN.end_iters):
         batch_data = next(iterator_train)
+
         data_time.update(time.time() - tic)
         model.zero_grad()
         
@@ -142,7 +148,7 @@ def train(model, loader_train, history):
                   'Accuracy: {:4.2f}, Loss: {:.6f}'
                   .format(cur_iter, cfg.TRAIN.end_iters,
                           batch_time.average(), data_time.average(),
-                          cfg.TRAIN.running_lr_encoder, cfg.TRAIN.running_lr_decoder,
+                          cfg.TRAIN.running_lr_backbone, cfg.TRAIN.running_lr_semantic,
                           ave_acc.average(), ave_total_loss.average()))
 
             fractional_epoch = epoch - 1 + 1. * i / cfg.TRAIN.epoch_iters
@@ -168,16 +174,17 @@ if __name__ == "__main__":
         batch_size=2,
         shuffle=False,
         num_workers=cfg.TRAIN.workers,
+        collate_fn=user_scattered_collate,
         drop_last=True,
         pin_memory=True)
 
 
     device = torch.device(cfg.cuda)
 
-    backbone_net = Backbone(cfg.arch_encoder).to(device)
-    semantic_net = SemanticNet(cfg.arch_semantic).to(device)
+    backbone_net = Backbone(cfg).to(device)
+    semantic_net = SemanticNet(cfg).to(device)
     critic = nn.NLLLoss(ignore_index=-1)
-    model = Model(encoder_net=backbone_net, decoder_net=semantic_net, critic=critic, deep_sup_scale=cfg.TRAIN.deep_sup_scale)
+    model = Model(backbone_net=backbone_net, semantic_net=semantic_net, critic=critic, deep_sup_scale=cfg.TRAIN.deep_sup_scale)
 
     optimizers = create_optimizers((backbone_net, semantic_net), cfg)
 

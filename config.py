@@ -13,8 +13,8 @@ _C.cuda = "cpu" # convert to "gpu" during training
 # Dataset
 # -----------------------------------------------------------------------------
 _C.DATASET = CN()
-_C.DATASET.image_train = "./../DeepFashionData/train/image/"
-_C.DATASET.json_train = "./../DeepFashionData/train/annos/"
+_C.DATASET.image_train = "./../train/image/"
+_C.DATASET.json_train = "./../train/annos/"
 _C.DATASET.list_val = "./data/validation.odgt"
 _C.DATASET.num_class = 1
 # multiscale train/test, size of short edge (int or tuple)
@@ -33,7 +33,7 @@ _C.DATASET.random_flip = True
 # -----------------------------------------------------------------------------
 _C.MODEL = CN()
 # architecture of net_encoder
-_C.MODEL.arch_encoder = "resnet18dialated"
+_C.MODEL.arch_backbone = "resnet18dialated"
 # architecture of net_decoder
 _C.MODEL.arch_semantic = "ppm_deepsup"
 # weights to finetune net_encoder
@@ -42,6 +42,8 @@ _C.MODEL.weights_encoder = ""
 _C.MODEL.weights_decoder = ""
 # number of feature channels between encoder and decoder
 _C.MODEL.fc_dim = 512
+# number of class in model
+_C.MODEL.num_class = 2
 
 # -----------------------------------------------------------------------------
 # Training
@@ -54,8 +56,8 @@ _C.TRAIN.start_iters = 0
 _C.TRAIN.end_iters = 5000
 
 _C.TRAIN.optim = "SGD"
-_C.TRAIN.lr_encoder = 0.02
-_C.TRAIN.lr_decoder = 0.02
+_C.TRAIN.lr_backbone = 0.02
+_C.TRAIN.lr_semantic = 0.02
 # power in poly to drop LR
 _C.TRAIN.lr_pow = 0.9
 # momentum for sgd, beta1 for adam
