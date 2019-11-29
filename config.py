@@ -7,7 +7,7 @@ from yacs.config import CfgNode as CN
 
 _C = CN()
 _C.DIR = "ckpt/ade20k-resnet50dilated-ppm_deepsup"
-_C.cuda = "cpu" # convert to "gpu" during training
+_C.cuda = "cuda" # convert to "cuda" during training using GPU
 
 # -----------------------------------------------------------------------------
 # Dataset
@@ -53,7 +53,7 @@ _C.TRAIN.batch_size_per_gpu = 2
 # epoch to start training. useful if continue from a checkpoint
 _C.TRAIN.start_iters = 0
 # iterations of each epoch (irrelevant to batch size)
-_C.TRAIN.end_iters = 5000
+_C.TRAIN.end_iters = 70000
 
 _C.TRAIN.optim = "SGD"
 _C.TRAIN.lr_backbone = 0.02
@@ -69,7 +69,7 @@ _C.TRAIN.deep_sup_scale = 0.4
 # fix bn params, only under finetuning
 _C.TRAIN.fix_bn = False
 # number of data loading workers
-_C.TRAIN.workers = 16
+_C.TRAIN.workers = 0 # Multi-Processing failed for Windows system. Could be increased in other systems
 
 # frequency to display
 _C.TRAIN.disp_iter = 20

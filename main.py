@@ -23,13 +23,13 @@ def checkpoint(model, history, cfg, iters):
 
     torch.save(
         history,
-        '{}/history_epoch_{}.pth'.format(cfg.DIR, iters))
+        '{}/history_iter_{}.pth'.format(cfg.DIR, iters))
     torch.save(
         dict_backbone,
-        '{}/backbone_epoch_{}.pth'.format(cfg.DIR, iters))
+        '{}/backbone_iter_{}.pth'.format(cfg.DIR, iters))
     torch.save(
         dict_semantic,
-        '{}/semantic_epoch_{}.pth'.format(cfg.DIR, iters))
+        '{}/semantic_iter_{}.pth'.format(cfg.DIR, iters))
 
 
 def group_weight(module):
@@ -82,7 +82,7 @@ def adjust_learning_rate(optimizers, cur_iter, cfg):
         param_group['lr'] = cfg.TRAIN.running_lr_semantic
 
 
-def train(model, loader_train, history):
+def train(model, loader_train, history, device):
     """
     takes input image as RGB, passes through ConvNet to get backbone feature
     backbone feature is input for semantic segmentation module to get ROI
@@ -125,7 +125,9 @@ def train(model, loader_train, history):
         
         adjust_learning_rate(optimizers, cur_iter, cfg)
 
-        loss, acc = model(batch_data[0])
+        batch_data = {"img_data": batch_data[0]["img_data"].to(device), 
+            "seg_label": batch_data[0]["seg_label"].to(device)}
+        loss, acc = model(batch_data)
         loss = loss.mean()
         acc = acc.mean()
 
@@ -151,43 +153,40 @@ def train(model, loader_train, history):
                           cfg.TRAIN.running_lr_backbone, cfg.TRAIN.running_lr_semantic,
                           ave_acc.average(), ave_total_loss.average()))
 
-            fractional_epoch = epoch - 1 + 1. * i / cfg.TRAIN.epoch_iters
             history['train']['iters'].append(cur_iter)
             history['train']['loss'].append(loss.data.item())
             history['train']['acc'].append(acc.data.item())
 
         if cur_iter % cfg.TRAIN.checkpoint == 0:
-            checkpoint((model.backbone_net, model.semantic_net), history, cfg)
+            checkpoint(model, history, cfg, cur_iter)
         
 
 if __name__ == "__main__":
-    img_input = torch.randn(2, 3, 256, 256)
+    device = torch.device(cfg.cuda)
 
     dataset_train = TrainDataset(
         cfg.DATASET.image_train,
         cfg.DATASET.json_train,
         cfg.DATASET,
+        device,
         batch_per_gpu=cfg.TRAIN.batch_size_per_gpu)
 
     loader_train = torch.utils.data.DataLoader(
         dataset_train,
-        batch_size=2,
+        batch_size=1,
         shuffle=False,
         num_workers=cfg.TRAIN.workers,
         collate_fn=user_scattered_collate,
         drop_last=True,
         pin_memory=True)
 
-
-    device = torch.device(cfg.cuda)
-
     backbone_net = Backbone(cfg).to(device)
     semantic_net = SemanticNet(cfg).to(device)
     critic = nn.NLLLoss(ignore_index=-1)
-    model = Model(backbone_net=backbone_net, semantic_net=semantic_net, critic=critic, deep_sup_scale=cfg.TRAIN.deep_sup_scale)
+    model = Model(backbone_net=backbone_net, semantic_net=semantic_net, critic=critic, deep_sup_scale=cfg.TRAIN.deep_sup_scale).to(device)
 
     optimizers = create_optimizers((backbone_net, semantic_net), cfg)
 
-    train(model, loader_train, optimizers)
+    train(model, loader_train, optimizers, device)
 
 

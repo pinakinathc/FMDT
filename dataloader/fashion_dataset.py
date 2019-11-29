@@ -100,7 +100,7 @@ class BaseDataset(torch.utils.data.Dataset):
 
 
 class TrainDataset(BaseDataset):
-    def __init__(self, image_dataset, json_dataset, opt, batch_per_gpu=1, **kwargs):
+    def __init__(self, image_dataset, json_dataset, opt, device, batch_per_gpu=1, **kwargs):
         super(TrainDataset, self).__init__(image_dataset, json_dataset, opt, **kwargs)
         self.image_dataset = image_dataset
         self.json_dataset = json_dataset
@@ -113,6 +113,7 @@ class TrainDataset(BaseDataset):
 
         self.cur_idx = 0
         self.if_shuffled = False
+        self.device = device
 
     def _get_sub_batch(self):
         while True:
@@ -224,8 +225,8 @@ class TrainDataset(BaseDataset):
             batch_segms[i][:segm.shape[0], :segm.shape[1]] = segm
 
         output = dict()
-        output['img_data'] = batch_images
-        output['seg_label'] = batch_segms
+        output['img_data'] = torch.FloatTensor(batch_images)
+        output['seg_label'] = torch.LongTensor(batch_segms)
         return output
 
     def __len__(self):
