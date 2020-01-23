@@ -35,7 +35,7 @@ class AverageMeter(object):
     def __init__(self):
         self.initialized = False
         self.val = None
-        self.avg = None
+        self.avg = float('NaN')
         self.sum = None
         self.count = None
 

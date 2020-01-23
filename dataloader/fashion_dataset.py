@@ -158,7 +158,7 @@ class TrainDataset(BaseDataset):
             segm = get_segm(img, batch_records[i][1])
             assert(segm.mode == "L")
             assert(img.size[0] == segm.size[0])
-            assert(img.size[1] == segm.size[1])            
+            assert(img.size[1] == segm.size[1])      
             img_width, img_height = img.size
             this_scale = min(
                 this_short_size / min(img_height, img_width), \
