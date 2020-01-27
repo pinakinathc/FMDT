@@ -91,4 +91,4 @@ if __name__ == "__main__":
             new_root = os.path.join("..", "output", "pinaki", root)
             if not os.path.exists(new_root):
                 os.makedirs(new_root)
-            plt.savefig(os.path.join(new_root, file))
+            plt.savefig(os.path.join(new_root, file[:-3]+"png"))

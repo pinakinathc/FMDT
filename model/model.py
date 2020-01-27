@@ -71,22 +71,16 @@ class Model(nn.Module):
             else:
                 new_backbone_features = []
                 pred_semantic = None
-                for f in backbone_features:
-                    f_h, f_w = f.shape[2:]
-                    f_scale = f_h/feed_dict['img_data'].shape[-2], f_w/feed_dict['img_data'].shape[-1]
-                    f = F.interpolate(f, scale_factor=(segSize[0]*f_scale[0]/f_h, segSize[1]*f_scale[1]/f_w),
-                            mode='bilinear', align_corners=False)
-                    new_backbone_features.append(f)
-                    print ("backbone shape: ", f.shape)
-                pred_semantic = self.semantic_net(new_backbone_features, segSize=segSize)
+                pred_semantic = self.semantic_net(backbone_features, segSize=segSize)
+                new_backbone_features = []
 
-                fused_data = feed_dict['img_data'] * F.interpolate(
-                        pred_semantic[:,-1,:,:].unsqueeze(1).repeat(1,3,1,1),
-                        size=(imgH, imgW), mode='bilinear', align_corners=False)
-                
-                new_backbone_features = self.backbone_net(fused_data, return_feature_maps=True)
-                for f in new_backbone_features:
-                    print ("final new backbone shape: ", f.shape)
+                for feature in backbone_features:
+                    _, channels, ht, wd = feature.shape
+
+                    new_backbone_features.append(feature * F.interpolate(
+                        pred_semantic[:,-1,:,:].unsqueeze(1).repeat(1, channels, 1, 1),
+                        size=(ht, wd), mode='bilinear', align_corners=False))
+
                 pred_textdetector = self.textdetector_net(backbone_features, imgH, imgW)
                 pred_textdetector_new = self.textdetector_net(new_backbone_features, imgH, imgW)
 
