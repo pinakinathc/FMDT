@@ -1,10 +1,28 @@
+## **An Episodic Learning Network for Text Detection on Human Bodies in Sports Images.**
+
+### **Authors**
+
+ **Pinaki Nath Chowdhury**, Palaiahnakote Shivakumara, Ramachandra Raghavendra, Sauradip Nag, Umapada Pal, Tong Lu, Daniel Lopresti
+ 
+ CVPR Unit, Indian Statistical Institute, Kolkata, India
+ 
+ University of Malaya, Malaysia
+ 
+ NTNU, Norway
+ 
+ IIT Madras, India
+ 
+ Nanjing University, China
+ 
+ Lehigh University, USA
+
 This project develops a new spatial attention mechanism for relevant text detection.
 
-## Datasets required to be downloaded
+### Datasets required to be downloaded
 * [DeepFashion2 Dataset](https://github.com/switchablenorms/DeepFashion2)
 * [ICDAR15](https://rrc.cvc.uab.es/?ch=4)
 
-## Instruction for Training
+### Instruction for Training
 * Modify the `config.py` file.
     * Line 17: enter directory path of DeepFashion2 Dataset Images
     * Line 18: enter directory path of DeepFashion2 Dataset Annotations (in JSON format)
@@ -13,17 +31,11 @@ This project develops a new spatial attention mechanism for relevant text detect
     * Pray to the Almightly that your `config.py` is safely configured.
     * `python main.py` (you can also specify which GPU to use by `CUDA_DEVICE_VISIBLE=2 python main.py`)
 
-## Instruction for Testing
+### Instruction for Testing
 * Go figure it our yourself by looking into `predict.py` :p
 
-## Ping me at:
+### Ping me at:
 contact@pinakinathc.me
 
-## Check other cool stuff at:
+### Check other cool stuff at:
 www.pinakinathc.me
-
-## Thanks to:
-* Sauradip Nag
-* P. Shivakumara
-* R. Raghavendra
-* Umapada Pal
