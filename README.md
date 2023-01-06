@@ -19,12 +19,11 @@ This project develops a new spatial attention mechanism for relevant text detect
 ## Ping me at:
 contact@pinakinathc.me
 
-## Check other kool stuff at:
+## Check other cool stuff at:
 www.pinakinathc.me
 
 ## Thanks to:
-* Sauradip Nag (The Engineer)
-* Dr. P. Shivakumara (The Main Locomotive driving this work)
-* Dr. R. Raghavendra (The Auxillary Locomotive Enhancing this work)
-* Dr. Umapada Pal (The Station Master)
-* Me: The passenger :p
+* Sauradip Nag
+* P. Shivakumara
+* R. Raghavendra
+* Umapada Pal
